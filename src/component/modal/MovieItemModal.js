@@ -58,13 +58,7 @@ class MovieItemModal extends CustomElement {
   popUp(movieInfo) {
     this.id = movieInfo.id;
     this.insertAdjacentHTML("beforeend", this.template(movieInfo));
-
-    const rate = getData(USER_RATE_STORAGE_KEY)?.[this.id];
-
-    if (rate) {
-      this.rerenderUserRate(rate);
-    }
-
+    this.rerenderSavedUserRate();
     this.setEvent();
   }
 
@@ -99,6 +93,14 @@ class MovieItemModal extends CustomElement {
       this.rerenderUserRate(targetRate);
       this.saveUserRate(targetRate);
     });
+  }
+
+  rerenderSavedUserRate() {
+    const rate = getData(USER_RATE_STORAGE_KEY)?.[this.id];
+
+    if (rate) {
+      this.rerenderUserRate(rate);
+    }
   }
 
   rerenderUserRate(rate) {
