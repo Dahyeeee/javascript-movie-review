@@ -4,13 +4,14 @@ import { $ } from "../../util/dom";
 import "./MovieList";
 import "./MovieListSkeleton";
 import "../modal/MovieItemModal";
+import { apiStatus } from "../../constant/movieConstants";
 
 class MovieContainer extends CustomElement {
   #searchWord = "";
 
   connectedCallback() {
     super.connectedCallback();
-    MovieManager.subscribe(this);
+    MovieManager.subscribe(this.rerender.bind(this));
     MovieManager.showMovies();
   }
 
@@ -25,12 +26,19 @@ class MovieContainer extends CustomElement {
     `;
   }
 
-  rerender({ searchWord }) {
+  rerender(state) {
+    if (state.status === apiStatus.FAILURE) {
+      this.replaceChildren();
+      return;
+    }
+
+    const { searchWord } = state.data;
+
     if (this.#searchWord !== searchWord) {
       this.#searchWord = searchWord;
 
       $(".movie-container-title").innerText = searchWord
-        ? `'${searchWord}'검색 결과`
+        ? `'${searchWord}' 검색 결과`
         : "지금 인기 있는 영화";
     }
   }

@@ -5,7 +5,7 @@ import GenreMatcher from "./GenreMatcher";
 import { ImgSrc } from "../constant/movieConstants";
 
 class Movie {
-  private state: MovieAppData = {
+  private data: MovieAppData = {
     movies: [],
     searchWord: "",
     page: 1,
@@ -13,14 +13,16 @@ class Movie {
     isShowMore: false,
   };
 
-  getMovie(id: number) {
-    return this.state.movies.find((movie) => movie.id === id);
+  private setNewData<T>(newData: T) {
+    this.data = { ...this.data, ...newData };
+  }
+
+  getMovie(id: number): MovieItem | undefined {
+    return this.data.movies.find((movie) => movie.id === id);
   }
 
   async getMovies(query: string = "") {
-    this.state.page = 1;
-    this.state.searchWord = query;
-    this.state.isShowMore = false;
+    this.setNewData({ page: 1, searchWord: query, isShowMore: false });
 
     const apiData = await this.getApiData();
 
@@ -28,15 +30,16 @@ class Movie {
       return apiData;
     }
 
-    this.state.movies = this.formMovies(apiData.results);
-    this.state.totalPages = apiData.total_pages;
+    this.setNewData({
+      movies: this.formMovies(apiData.results),
+      totalPages: apiData.total_pages,
+    });
 
-    return this.state;
+    return this.data;
   }
 
   async getMoreMovies() {
-    this.state.page += 1;
-    this.state.isShowMore = true;
+    this.setNewData({ page: this.data.page + 1, isShowMore: true });
 
     const apiData = await this.getApiData();
 
@@ -45,10 +48,12 @@ class Movie {
     }
 
     const moreMovies = this.formMovies(apiData.results);
-    this.state.movies = [...this.state.movies, ...moreMovies];
-    this.state.totalPages = apiData.total_pages;
+    this.setNewData({
+      movies: [...this.data.movies, ...moreMovies],
+      totalPages: apiData.total_pages,
+    });
 
-    return { ...this.state, movies: moreMovies };
+    return { ...this.data, movies: moreMovies };
   }
 
   private formMovies(apiData: ApiMovieItem[]) {
@@ -72,9 +77,9 @@ class Movie {
   }
 
   private makeUrl() {
-    return this.state.searchWord
-      ? searchMovieUrl(this.state.searchWord, this.state.page)
-      : popularMovieUrl(this.state.page);
+    return this.data.searchWord
+      ? searchMovieUrl(this.data.searchWord, this.data.page)
+      : popularMovieUrl(this.data.page);
   }
 
   private async getApiData() {

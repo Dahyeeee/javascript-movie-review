@@ -1,4 +1,5 @@
 import {
+  apiStatus,
   ImgSrc,
   RateCaption,
   RATE_RANGE,
@@ -10,10 +11,10 @@ import { getData, saveData } from "../../util/localStorage";
 import CustomElement from "../basic/CustomElement";
 
 class MovieItemModal extends CustomElement {
-  id = null;
+  #movieId = null;
 
   connectedCallback() {
-    MovieManager.subscribeModal(this);
+    MovieManager.subscribe(this.popUp.bind(this));
   }
 
   template(movieInfo) {
@@ -84,14 +85,16 @@ class MovieItemModal extends CustomElement {
 
   setRateEvent() {
     $(".user-rate-stars").addEventListener("click", (e) => {
-      const targetRate = e.target.closest(".user-rate-star")?.dataset.value;
+      const targetRate = Number(
+        e.target.closest(".user-rate-star")?.dataset.value
+      );
 
       if (!targetRate) {
         return;
       }
 
       this.rerenderUserRate(targetRate);
-      this.saveUserRate(targetRate);
+      saveData(USER_RATE_STORAGE_KEY, { [this.#movieId]: targetRate });
     });
   }
 
@@ -104,11 +107,8 @@ class MovieItemModal extends CustomElement {
   }
 
   rerenderUserRate(rate) {
-    const rateNumber = Number(rate) * RATE_RANGE;
-    const rateCaption = RateCaption[rate];
-
-    $(".user-rate-number").innerText = rateNumber;
-    $(".user-rate-caption").innerText = rateCaption;
+    $(".user-rate-number").innerText = rate * RATE_RANGE;
+    $(".user-rate-caption").innerText = RateCaption[rate];
     this.rerenderStars(rate);
   }
 
@@ -116,15 +116,6 @@ class MovieItemModal extends CustomElement {
     $$(".user-rate-star").forEach(($star, index) => {
       $star.src = index < rate ? ImgSrc.FULL_STAR : ImgSrc.EMPTY_STAR;
     });
-  }
-
-  saveUserRate(rate) {
-    const newData = {
-      ...getData(USER_RATE_STORAGE_KEY),
-      [this.id]: rate,
-    };
-
-    saveData(USER_RATE_STORAGE_KEY, newData);
   }
 }
 

@@ -32,6 +32,20 @@ export interface MovieAppData {
   isShowMore: boolean;
 }
 
+export interface Error {
+  error: number;
+  errorMessage: string;
+}
+
+export interface State {
+  status: Status;
+  data: MovieAppData | MovieItem | Error | {};
+}
+
+export type Subscriber = (state: State) => void;
+
+export type Status = "loading" | "success" | "failure";
+
 export interface MovieGenreApi {
   id: number;
   name: string;
@@ -41,6 +55,6 @@ export interface Genre {
   [key: number]: string;
 }
 
-export interface Constant {
+export type Constant = Readonly<{
   [key: string]: string;
-}
+}>;
